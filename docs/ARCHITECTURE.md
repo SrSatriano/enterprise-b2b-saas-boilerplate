@@ -1,20 +1,31 @@
-# Arquitetura de rotas protegidas
+﻿# Architecture
 
-## Middleware Next.js
+## VisÃ£o geral
 
-```typescript
-// middleware.ts — verifica sessão Supabase
-// Redireciona /dashboard/* para /login se não autenticado
+Este documento descreve a arquitetura em produÃ§Ã£o da versÃ£o **1.0.0**.
+
+```mermaid
+flowchart LR
+  Client[Clients / Operators] --> API[Core Service]
+  API --> Store[(Persistence)]
+  API --> Metrics[Observability]
+  Metrics --> Dashboard[Grafana / Logs]
 ```
 
-## RBAC
+## Componentes
 
-- `owner`: billing, delete org
-- `admin`: convites, roles
-- `member`: CRUD de recursos do produto
+| Componente | Responsabilidade |
+|------------|------------------|
+| Core | Regras de negÃ³cio e orquestraÃ§Ã£o |
+| Persistence | Estado durÃ¡vel e idempotÃªncia |
+| Observability | MÃ©tricas, traces e alertas |
 
-## Fluxo de signup
+## DecisÃµes de design
 
-1. User signup → Supabase Auth
-2. Trigger cria `organization` + `membership` owner
-3. Redirect para onboarding + checkout Stripe (opcional trial)
+- **Baixa latÃªncia**: hot path sem alocaÃ§Ã£o desnecessÃ¡ria
+- **Fail-safe**: degradaÃ§Ã£o graceful e reconciliaÃ§Ã£o
+- **AuditÃ¡vel**: logs estruturados e rastreio de requisiÃ§Ãµes
+
+## Escalabilidade
+
+Escala horizontal no tier stateless; particionamento onde hÃ¡ estado (sÃ­mbolos, tenants, shards).
